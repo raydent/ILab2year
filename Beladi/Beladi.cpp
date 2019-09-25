@@ -8,7 +8,8 @@ struct page {
   int index;
   char data[60];
 };
-
+std::list <page> myList;
+std::unordered_map <int, page> myMap;
 bool operator == (page c1, page c2){
     return c1.index == c2.index;
 }
@@ -17,9 +18,9 @@ bool operator != (page c1, page c2){
 }
 page* intArrToPageArr(int* arr, int arrLen);
 int countProximity(page* pagePointer, int arrLen, int index);
-bool beladi(page* pagePointer, int arrLen, int cacheCapacity, std:: list <page> myList, std:: unordered_map <int, page> myMap);
+bool beladi(page* pagePointer, int arrLen, int cacheCapacity);
 int caching(page* pageArr, int arrLen, int cacheCapacity);
-std::list<page>::iterator findElemMaxProximity(page* pagePointer, std:: list <page> myList, int arrLen);
+std::list<page>::iterator findElemMaxProximity(page* pagePointer, int arrLen);
 int main(){
   int cacheCapacity = 0;
   int arrLen = 0;
@@ -46,35 +47,31 @@ page* intArrToPageArr(int* arr, int arrLen){
 }
 int caching(page* pageArr, int arrLen, int cacheCapacity){
   int cacheHitCount = 0;
-  std::list <page> myList;
-  std::unordered_map <int, page> myMap;
   for (int i = 0; i < arrLen; i++){
-    cacheHitCount += beladi(pageArr + i, arrLen - i, cacheCapacity, myList, myMap);
+    cacheHitCount += beladi(pageArr + i, arrLen - i, cacheCapacity);
   }
   return cacheHitCount;
 }
-bool beladi(page* pagePointer, int arrLen, int cacheCapacity, std:: list <page> *myList, std:: unordered_map <int, page> myMap){
-  std::cout << "start " << pagePointer[0].index << '\n';
+bool beladi(page* pagePointer, int arrLen, int cacheCapacity){
   auto hit = myMap.find(pagePointer[0].index);
-  std::cout << "mylist size = " << myList.size() << '\n';
+  // std::cout << "mylist size = " << myList.size() << '\n';
   if (hit == myMap.end()) {
-    if (myList.size() == cacheCapacity) {
-      std::cout << "1st way\n";
-      auto toBeDeleted = findElemMaxProximity(pagePointer, myList, arrLen);
+    // std:: cout << "map end\n";
+    if (myList.size() >= cacheCapacity) {
+      auto toBeDeleted = findElemMaxProximity(pagePointer, arrLen);
       myMap.erase(toBeDeleted -> index);
       myList.remove(*toBeDeleted);
     }
     myList.push_front(pagePointer[0]);
     myMap[pagePointer[0].index] = *myList.begin();
-    std::cout << myList.size() << '\n';
+    //std::cout << myList.size() << '\n';
     return false;
   }
-  std::cout << "true" << pagePointer[0].index << '\n';
   auto eltit = hit->second;
-  if (eltit != *myList.begin()){
-    myList.push_front(pagePointer[0]);
-    myMap[pagePointer[0].index] = *myList.begin();
-  }
+  // if (eltit != *myList.begin()){
+  //   myList.push_front(pagePointer[0]);
+  //   myMap[pagePointer[0].index] = *myList.begin();
+  // }
   return true;
 }
 // bool lookup(const T *elem) {
@@ -102,15 +99,17 @@ int countProximity(page* pagePointer, int arrLen, int index){
   }
   return count;
 }
-std::list<page>::iterator findElemMaxProximity(page* pagePointer, std:: list <page> myList, int arrLen){
-  std::list<page>::iterator maxIt;
+std::list<page>::iterator findElemMaxProximity(page* pagePointer, int arrLen){
+  std::list<page>::iterator maxIt = myList.end();
   int proximity = 0;
   int maxProximity = 0;
   for(std::list<page>::iterator it = myList.begin(); it != myList.end(); ++it){
-    proximity = countProximity(pagePointer + 1, arrLen - 1, it -> index);
-    if (proximity > maxProximity){
-      maxIt = it;
-      maxProximity = proximity;
+    if(arrLen != 0){
+      proximity = countProximity(pagePointer + 1, arrLen - 1, it -> index);
+      if (proximity > maxProximity){
+        maxIt = it;
+        maxProximity = proximity;
+      }
     }
   }
   return maxIt;
