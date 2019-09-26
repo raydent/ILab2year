@@ -9,10 +9,10 @@ struct page {
     char data[60];
 };
 
-bool operator == (const page c1, const page c2) {
+bool operator == (const page &c1, const page &c2) {
     return c1.index == c2.index;
 }
-bool operator != (const page c1, const page c2) {
+bool operator != (const page &c1, const page &c2) {
     return c1.index != c2.index;
 }
 page* intArrToPageArr(int* arr, int arrLen);
