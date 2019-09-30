@@ -11,7 +11,7 @@ struct page {
 };
 template <typename T> struct fullCache {
     std::unordered_map <int, T> myMap;
-    std::list<T> myList;
+    std::list <T> myList;
     int cacheCapacity;
 };
 
@@ -34,23 +34,24 @@ int main() {
     int arrLen = 0;
     std::cin >> cacheCapacity;
     std::cin >> arrLen;
-    std::vector<page> pageArr(arrLen);
+    std::vector <page> pageArr(arrLen);
     for(int i = 0; i < arrLen; i++) {
         std::cin >> pageArr[i].index;
     }
     int cacheHit = caching(pageArr, arrLen, cacheCapacity);
     std::cout << cacheHit << '\n';
 }
-int caching(std::vector<page> pageArr, const int& arrLen, const int& cacheCapacity) {
+int caching(std::vector <page> pageArr, const int& arrLen, const int& cacheCapacity) {
     int cacheHitCount = 0;
     fullCache<page> cache;
+    cache.cacheCapacity = cacheCapacity;
     for (int i = 0; i < arrLen; i++){
         cacheHitCount += beladi(&(pageArr[i]), arrLen - i, cache);
     }
     return cacheHitCount;
 }
 template <typename T>
-bool beladi(T* pagePointer, const int& arrLen, fullCache<T>& cache){
+bool beladi(T* pagePointer, const int& arrLen, fullCache <T> & cache){
     auto hit = cache.myMap.find(pagePointer[0].index);
     if (hit == cache.myMap.end()) {
         if (cache.myList.size() >= cache.cacheCapacity) {
