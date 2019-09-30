@@ -3,7 +3,8 @@
 #include <unordered_map>
 #include <string>
 #include <cassert>
-const int K = 1;
+
+
 struct page {
     int index;
     char data[60];
@@ -15,11 +16,13 @@ bool operator == (const page &c1, const page &c2) {
 bool operator != (const page &c1, const page &c2) {
     return c1.index != c2.index;
 }
+
 page* intArrToPageArr(int* arr, int arrLen);
 int countProximity(page* pagePointer, int arrLen, int index);
 template <typename T> bool beladi(T* pagePointer, int arrLen, int cacheCapacity, std::list <T> &myList, std::unordered_map <int, T> &myMap);
 int caching(page* pageArr, int arrLen, int cacheCapacity);
-std::list<page>::iterator findElemMaxProximity(page* pagePointer, int arrLen, std::list <page> &myList);
+template <typename T>  typename std::unordered_map <int, T>::iterator findElemMaxProximity(T* pagePointer, int arrLen, std::unordered_map <int, T> myMap);
+
 int main() {
     int cacheCapacity = 0;
     int arrLen = 0;
@@ -55,9 +58,9 @@ template <typename T> bool beladi(T* pagePointer, int arrLen, int cacheCapacity,
     auto hit = myMap.find(pagePointer[0].index);
     if (hit == myMap.end()) {
         if (myList.size() >= cacheCapacity) {
-            auto toBeDeleted = findElemMaxProximity(pagePointer, arrLen, myList);
-            myMap.erase(toBeDeleted -> index);
-            myList.remove(*toBeDeleted);
+            auto toBeDeleted = findElemMaxProximity(pagePointer, arrLen, myMap);
+            myMap.erase((*toBeDeleted).first);
+            myList.remove((*toBeDeleted).second);
         }
         myList.push_front(pagePointer[0]);
         myMap[pagePointer[0].index] = *myList.begin();
@@ -74,18 +77,13 @@ int countProximity(page* pagePointer, int arrLen, int index) {
     }
     return count;
 }
-std::list<page>::iterator findElemMaxProximity(page* pagePointer, int arrLen, std::list <page> &myList) {
-    std::list<page>::iterator maxIt = myList.end();
-    int proximity = 0;
-    int maxProximity = 0;
-    for(std::list <page> ::iterator it = myList.begin(); it != myList.end(); ++it) {
-        if(arrLen != 0) {
-            proximity = countProximity(pagePointer + 1, arrLen - 1, it -> index);
-            if (proximity > maxProximity) {
-                maxIt = it;
-                maxProximity = proximity;
-            }
+template <typename T>  typename std::unordered_map <int, T>::iterator findElemMaxProximity(T* pagePointer, int arrLen, std::unordered_map <int, T> myMap) {
+    for (int i = 0; i < arrLen; i++){
+        if (myMap.size() == 1)
+            break;
+        if (myMap.find(pagePointer[i].index) != myMap.end()){
+            myMap.erase(pagePointer[i].index);
         }
     }
-    return maxIt;
+    return myMap.begin();
 }
