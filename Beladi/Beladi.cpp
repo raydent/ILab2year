@@ -17,7 +17,7 @@ bool operator != (const page &c1, const page &c2) {
 }
 page* intArrToPageArr(int* arr, int arrLen);
 int countProximity(page* pagePointer, int arrLen, int index);
-bool beladi(page* pagePointer, int arrLen, int cacheCapacity, std::list <page> &myList, std::unordered_map <int, page> &myMap);
+template <typename T> bool beladi(T* pagePointer, int arrLen, int cacheCapacity, std::list <T> &myList, std::unordered_map <int, T> &myMap);
 int caching(page* pageArr, int arrLen, int cacheCapacity);
 std::list<page>::iterator findElemMaxProximity(page* pagePointer, int arrLen, std::list <page> &myList);
 int main() {
@@ -51,7 +51,7 @@ int caching(page* pageArr, int arrLen, int cacheCapacity) {
     }
     return cacheHitCount;
 }
-bool beladi(page* pagePointer, int arrLen, int cacheCapacity, std::list <page> &myList, std::unordered_map <int, page> &myMap) {
+template <typename T> bool beladi(T* pagePointer, int arrLen, int cacheCapacity, std::list <T> &myList, std::unordered_map <int, T> &myMap){
     auto hit = myMap.find(pagePointer[0].index);
     if (hit == myMap.end()) {
         if (myList.size() >= cacheCapacity) {
