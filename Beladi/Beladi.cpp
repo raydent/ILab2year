@@ -22,11 +22,12 @@ bool operator != (const page &c1, const page &c2) {
     return c1.index != c2.index;
 }
 
-page* intArrToPageArr(std::vector<int> numArr, int arrLen);
-int countProximity(page* pagePointer, int arrLen, int index);
-template <typename T> bool beladi(T* pagePointer, int arrLen, fullCache<T>& cache);
-int caching(std::vector<page> pageArr, int arrLen, int cacheCapacity);
-template <typename T>  typename std::unordered_map <int, T>::iterator findElemMaxProximity(T* pagePointer, int arrLen, std::unordered_map <int, T> myMap);
+
+template <typename T>
+bool beladi(T* pagePointer, const int& arrLen, fullCache<T>& cache);
+int caching(std::vector<page> pageArr, const int& arrLen, const int& cacheCapacity);
+template <typename T>
+auto findElemMaxProximity(T* pagePointer, const int& arrLen, std::unordered_map <int, T> myMap);
 
 int main() {
     int cacheCapacity = 0;
@@ -40,7 +41,7 @@ int main() {
     int cacheHit = caching(pageArr, arrLen, cacheCapacity);
     std::cout << cacheHit << '\n';
 }
-int caching(std::vector<page> pageArr, int arrLen, int cacheCapacity) {
+int caching(std::vector<page> pageArr, const int& arrLen, const int& cacheCapacity) {
     int cacheHitCount = 0;
     fullCache<page> cache;
     for (int i = 0; i < arrLen; i++){
@@ -48,7 +49,8 @@ int caching(std::vector<page> pageArr, int arrLen, int cacheCapacity) {
     }
     return cacheHitCount;
 }
-template <typename T> bool beladi(T* pagePointer, int arrLen, fullCache<T>& cache){
+template <typename T>
+bool beladi(T* pagePointer, const int& arrLen, fullCache<T>& cache){
     auto hit = cache.myMap.find(pagePointer[0].index);
     if (hit == cache.myMap.end()) {
         if (cache.myList.size() >= cache.cacheCapacity) {
@@ -62,16 +64,8 @@ template <typename T> bool beladi(T* pagePointer, int arrLen, fullCache<T>& cach
     }
     return true;
 }
-int countProximity(page* pagePointer, int arrLen, int index) {
-    int count = 0;
-    for (count = 0; count < arrLen; count++) {
-        if(pagePointer[count].index == index) {
-            break;
-        }
-    }
-    return count;
-}
-template <typename T>  typename std::unordered_map <int, T>::iterator findElemMaxProximity(T* pagePointer, int arrLen, std::unordered_map <int, T> myMap) {
+template <typename T>
+auto findElemMaxProximity(T* pagePointer, const int& arrLen, std::unordered_map <int, T> myMap) {
     for (int i = 0; i < arrLen; i++){
         if (myMap.size() == 1)
             break;
