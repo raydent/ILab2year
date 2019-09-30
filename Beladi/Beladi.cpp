@@ -3,11 +3,16 @@
 #include <unordered_map>
 #include <string>
 #include <cassert>
-
+#include <vector>
 
 struct page {
     int index;
     char data[60];
+};
+template <typename T> struct fullCache {
+    std::unordered_map <int, T> myMap;
+    std::list<T> myList;
+    int cacheCapacity;
 };
 
 bool operator == (const page &c1, const page &c2) {
@@ -17,10 +22,10 @@ bool operator != (const page &c1, const page &c2) {
     return c1.index != c2.index;
 }
 
-page* intArrToPageArr(int* arr, int arrLen);
+page* intArrToPageArr(std::vector<int> numArr, int arrLen);
 int countProximity(page* pagePointer, int arrLen, int index);
-template <typename T> bool beladi(T* pagePointer, int arrLen, int cacheCapacity, std::list <T> &myList, std::unordered_map <int, T> &myMap);
-int caching(page* pageArr, int arrLen, int cacheCapacity);
+template <typename T> bool beladi(T* pagePointer, int arrLen, fullCache<T>& cache);
+int caching(std::vector<page> pageArr, int arrLen, int cacheCapacity);
 template <typename T>  typename std::unordered_map <int, T>::iterator findElemMaxProximity(T* pagePointer, int arrLen, std::unordered_map <int, T> myMap);
 
 int main() {
@@ -28,42 +33,31 @@ int main() {
     int arrLen = 0;
     std::cin >> cacheCapacity;
     std::cin >> arrLen;
-    int* numArr = new int[arrLen];
+    std::vector<page> pageArr(arrLen);
     for(int i = 0; i < arrLen; i++) {
-        std::cin >> numArr[i];
+        std::cin >> pageArr[i].index;
     }
-    page* pageArr = intArrToPageArr(numArr, arrLen);
     int cacheHit = caching(pageArr, arrLen, cacheCapacity);
     std::cout << cacheHit << '\n';
-    delete[] pageArr;
-    delete[] numArr;
 }
-page* intArrToPageArr(int* arr, int arrLen) {
-    page *pageArr = new page[arrLen];
-    for (int i = 0; i < arrLen; i++) {
-        pageArr[i].index = arr[i];
-    }
-    return pageArr;
-}
-int caching(page* pageArr, int arrLen, int cacheCapacity) {
+int caching(std::vector<page> pageArr, int arrLen, int cacheCapacity) {
     int cacheHitCount = 0;
-    std::list <page> myList;
-    std::unordered_map <int, page> myMap;
+    fullCache<page> cache;
     for (int i = 0; i < arrLen; i++){
-        cacheHitCount += beladi(pageArr + i, arrLen - i, cacheCapacity, myList, myMap);
+        cacheHitCount += beladi(&(pageArr[i]), arrLen - i, cache);
     }
     return cacheHitCount;
 }
-template <typename T> bool beladi(T* pagePointer, int arrLen, int cacheCapacity, std::list <T> &myList, std::unordered_map <int, T> &myMap){
-    auto hit = myMap.find(pagePointer[0].index);
-    if (hit == myMap.end()) {
-        if (myList.size() >= cacheCapacity) {
-            auto toBeDeleted = findElemMaxProximity(pagePointer, arrLen, myMap);
-            myMap.erase((*toBeDeleted).first);
-            myList.remove((*toBeDeleted).second);
+template <typename T> bool beladi(T* pagePointer, int arrLen, fullCache<T>& cache){
+    auto hit = cache.myMap.find(pagePointer[0].index);
+    if (hit == cache.myMap.end()) {
+        if (cache.myList.size() >= cache.cacheCapacity) {
+            auto toBeDeleted = findElemMaxProximity(pagePointer, arrLen, cache.myMap);
+            cache.myMap.erase((*toBeDeleted).first);
+            cache.myList.remove((*toBeDeleted).second);
         }
-        myList.push_front(pagePointer[0]);
-        myMap[pagePointer[0].index] = *myList.begin();
+        cache.myList.push_front(pagePointer[0]);
+        cache.myMap[pagePointer[0].index] = *cache.myList.begin();
         return false;
     }
     return true;
