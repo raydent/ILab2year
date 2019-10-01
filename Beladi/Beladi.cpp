@@ -8,14 +8,11 @@
 
 struct page {
     int index;
-    // char data[60];
+    char data[60];
 };
 struct myHash {
     std::size_t operator()(page const& myPage) const noexcept
     {
-        // std::size_t h1 = std::hash<std::string>{}(s.first_name);
-        // std::size_t h2 = std::hash<std::string>{}(s.last_name);
-        // return h1 ^ (h2 << 1); // or use boost::hash_combine (see Discussion)
         std::size_t h = std::hash <int> {} (myPage.index);
         return h;
     }
@@ -26,9 +23,7 @@ template <typename T> struct fullCache {
     std::unordered_multimap <page, int, myHash> numMap;
     std::list <page> myList;
 };
-//  template<> struct std::hash <page p> {
-//     return std::hash<int>(p.index);
-// };
+
 
 bool operator == (const page &c1, const page &c2) {
     return c1.index == c2.index;
@@ -97,7 +92,6 @@ auto findElemMaxProximity(std::unordered_map <int, T> &myMap, std::unordered_mul
     int maxproximity = 0;
     auto maxIt = myMap.begin();
     for(auto it = myMap.begin(); it != myMap.end(); ++it) {
-        //auto numIt = numMap.find(it -> second);
         int minproximity = 0;
         typedef std::unordered_multimap <page, int, myHash>::iterator iterator;
         std::pair <iterator, iterator> iterpair = numMap.equal_range(it -> second);
