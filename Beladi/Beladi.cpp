@@ -44,7 +44,7 @@ template < typename T >
 bool beladi(T* pagePointer, const int& arrLen, fullCache < T > & cache, int i);
 int caching(std::vector < page >& pageArr, const int& arrLen, const int& cacheCapacity);
 template < typename T >
-auto findElemMaxProximity(T* pagePointer, const int& arrLen, std::unordered_map < int, T > & myMap, std::unordered_multimap < T, int, myHash > & numMap);
+auto findElemMaxProximity(const int& arrLen, std::unordered_map < int, T > & myMap, std::unordered_multimap < T, int, myHash > & numMap);
 
 int main() {
     int cacheCapacity = 0;
@@ -81,19 +81,18 @@ bool beladi(T* pagePointer, const int& arrLen, fullCache < T > & cache, int i) {
     // printf("%d\n", (int)cache.numMap.size());
     typedef std::unordered_multimap<page, int, myHash>::iterator iterator;
     std::pair<iterator, iterator> iterpair = cache.numMap.equal_range(pagePointer[0]);
-
-
     iterator it = iterpair.first;
     for (; it != iterpair.second; ++it) {
         if (it -> second == i) {
-            printf("element range is %d, range is %d id is %d\n", it -> second, i, pagePointer[0].index);
+            //printf("element range is %d, range is %d id is %d\n", it -> second, i, pagePointer[0].index);
             cache.numMap.erase(it);
             break;
         }
     }
     if (hit == cache.myMap.end()) {
         if (cache.myList.size() >= cache.cacheCapacity) {
-            auto toBeDeleted = findElemMaxProximity(pagePointer, arrLen, cache.myMap, cache.numMap);
+            printf("There's no %d element\n", pagePointer[0].index);
+            auto toBeDeleted = findElemMaxProximity(arrLen, cache.myMap, cache.numMap);
             cache.myMap.erase((*toBeDeleted).first);
             cache.myList.remove((*toBeDeleted).second);
         }
@@ -104,7 +103,7 @@ bool beladi(T* pagePointer, const int& arrLen, fullCache < T > & cache, int i) {
     return true;
 }
 template < typename T >
-auto findElemMaxProximity(T* pagePointer, const int& arrLen, std::unordered_map < int, T > & myMap, std::unordered_multimap < T, int, myHash > & numMap) {
+auto findElemMaxProximity(const int& arrLen, std::unordered_map < int, T > & myMap, std::unordered_multimap < T, int, myHash > & numMap) {
 
     int maxproximity = 0;
     auto maxIt = myMap.begin();
@@ -112,21 +111,28 @@ auto findElemMaxProximity(T* pagePointer, const int& arrLen, std::unordered_map 
         //auto numIt = numMap.find(it -> second);
         int minproximity = 0;
         typedef std::unordered_multimap<page, int, myHash>::iterator iterator;
-        std::pair<iterator, iterator> iterpair = numMap.equal_range(pagePointer[0]);
+        std::pair<iterator, iterator> iterpair = numMap.equal_range(it -> second);
         iterator numIt = iterpair.first;
-        if (numIt != iterpair.second){
+        // if (numIt != iterpair.second){
+        //     printf("numIt !=, %d\n", numIt -> first.index);
+        // }
+        if (numIt != iterpair.second && numIt -> first.index == it -> second.index){
             minproximity = numIt -> second;
-            printf("minproximity is %d\n", minproximity);
+            //printf("minproximity is %d\n", minproximity);
+        }
+        if (numIt == iterpair.second){
+            maxIt = it;
+            break;
         }
         for (; numIt != iterpair.second; ++numIt) {
-            if (numIt -> second < minproximity) {
+            if (numIt -> first.index == it -> second.index && numIt -> second < minproximity) {
                 //printf("element range is %d, range is %d id is %d\n", it -> second, i, pagePointer[0].index);
                 minproximity = numIt -> second;
-                maxIt = it;
             }
         }
         if (minproximity > maxproximity){
             maxproximity = minproximity;
+            maxIt = it;
         }
     }
     printf("maxproximity is %d, maxIt -> num is %d\n", maxproximity, maxIt -> second.index);
