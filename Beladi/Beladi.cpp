@@ -5,23 +5,21 @@
 #include <cassert>
 #include <vector>
 #include <map>
-
+#include <queue>
 struct page {
     int index;
     char data[60];
 };
-struct myHash {
-    std::size_t operator()(page const& myPage) const noexcept
-    {
-        std::size_t h = std::hash <int> {} (myPage.index);
-        return h;
-    }
-};
-template <typename T> struct fullCache {
-    int cacheCapacity;
-    std::unordered_map <int, page> myMap;
-    std::unordered_multimap <page, int, myHash> numMap;
-    std::list <page> myList;
+template <typename T>
+struct cache_t {
+  std::list<T>cache_;
+  std::unordered_map <int, T*> index_;
+  std::unordered_map <int, std::queue <int> > future_;
+  int process(std::vector<T>& arr);
+  void formFuture(const std::vector<T>& arr);
+  bool beladi(T& thispage, cache_t<T>& cache);
+  auto findElemMaxProximity(cache_t<T>& cache);
+  int cacheCapacity;
 };
 
 
@@ -33,12 +31,6 @@ bool operator != (const page &c1, const page &c2) {
 }
 
 
-template <typename T>
-bool beladi(T *pagePointer, const int &arrLen, fullCache <T> &cache, int i);
-int caching(std::vector <page> &pageArr, const int &arrLen, const int &cacheCapacity);
-template <typename T>
-auto findElemMaxProximity(std::unordered_map <int, T> &myMap, std::unordered_multimap <T, int, myHash> &numMap);
-
 int main() {
     int cacheCapacity = 0;
     int arrLen = 0;
@@ -48,70 +40,59 @@ int main() {
     for(int i = 0; i < arrLen; i++) {
         std::cin >> pageArr[i].index;
     }
-    int cacheHit = caching(pageArr, arrLen, cacheCapacity);
+    cache_t <page> cache;
+    cache.formFuture(pageArr);
+    cache.cacheCapacity = cacheCapacity;
+    int cacheHit = cache.process(pageArr);
     std::cout << cacheHit << '\n';
 }
-int caching(std::vector <page> &pageArr, const int &arrLen, const int &cacheCapacity) {
-    int cacheHitCount = 0;
-    fullCache <page> cache;
-    cache.cacheCapacity = cacheCapacity;
-    for(int i = 0; i < arrLen; i++) {
-        cache.numMap.insert(std::make_pair(pageArr[i], i));
-    }
-    for (int i = 0; i < arrLen; i++) {
-        cacheHitCount += beladi(&(pageArr[i]), arrLen - i, cache, i);
-    }
-    return cacheHitCount;
-}
+
 template <typename T>
-bool beladi(T* pagePointer, const int &arrLen, fullCache <T> &cache, int i) {
-    auto hit = cache.myMap.find(pagePointer[0].index);
-    typedef std::unordered_multimap <page, int, myHash>::iterator iterator;
-    std::pair <iterator, iterator> iterpair = cache.numMap.equal_range(pagePointer[0]);
-    iterator it = iterpair.first;
-    for (; it != iterpair.second; ++it) {
-        if (it -> second == i) {
-            cache.numMap.erase(it);
-            break;
-        }
+int cache_t<T>::process(std::vector<T>& arr) {
+    int cacheHit = 0;
+    int size = arr.size();
+    for(int i = 0; i < arr.size(); i++){
+        cacheHit += beladi(arr[i], *this);
+        future_[arr[i].index].pop();
     }
-    if (hit == cache.myMap.end()) {
-        if (cache.myList.size() >= cache.cacheCapacity) {
-            auto toBeDeleted = findElemMaxProximity(cache.myMap, cache.numMap);
-            cache.myMap.erase((*toBeDeleted).first);
-            cache.myList.remove((*toBeDeleted).second);
+    return cacheHit;
+}
+
+template <typename T>
+bool cache_t<T>::beladi(T& thispage, cache_t<T>& cache) {
+    auto hit = cache.index_.find(thispage.index);
+    if (hit == cache.index_.end()) {
+        if (cache.cache_.size() >= cache.cacheCapacity) {
+            auto toBeDeleted = findElemMaxProximity(cache);
+            cache.index_.erase((*toBeDeleted).first);
+            cache.cache_.remove(*(*toBeDeleted).second);
         }
-        cache.myList.push_front(pagePointer[0]);
-        cache.myMap[pagePointer[0].index] = *cache.myList.begin();
+        cache.cache_.push_front(thispage);
+        cache.index_[thispage.index] = &*(cache.cache_.begin());
         return false;
     }
     return true;
 }
 template <typename T>
-auto findElemMaxProximity(std::unordered_map <int, T> &myMap, std::unordered_multimap <T, int, myHash> &numMap) {
-    int maxproximity = 0;
-    auto maxIt = myMap.begin();
-    for(auto it = myMap.begin(); it != myMap.end(); ++it) {
-        int minproximity = 0;
-        typedef std::unordered_multimap <page, int, myHash>::iterator iterator;
-        std::pair <iterator, iterator> iterpair = numMap.equal_range(it -> second);
-        iterator numIt = iterpair.first;
-        if (numIt != iterpair.second && numIt -> first.index == it -> second.index) {
-            minproximity = numIt -> second;
-        }
-        if (numIt == iterpair.second) {
+auto cache_t<T>::findElemMaxProximity(cache_t<T>& cache) {
+    auto maxIt = cache.index_.begin();
+    int maxprox = 0;
+    for(auto it = cache.index_.begin(); it != cache.index_.end(); it++) {
+        auto x = cache.future_[it -> first].front();
+        if (x == 0){
             maxIt = it;
             break;
         }
-        for (; numIt != iterpair.second; ++numIt) {
-            if (numIt -> first.index == it -> second.index && numIt -> second < minproximity) {
-                minproximity = numIt -> second;
-            }
-        }
-        if (minproximity > maxproximity) {
-            maxproximity = minproximity;
+        if (x  > maxprox) {
+            maxprox = x;
             maxIt = it;
         }
     }
     return maxIt;
+}
+template <typename T>
+void cache_t<T>::formFuture (const std::vector<T>& arr) {
+    for(int i = 0; i < arr.size(); i++) {
+        future_[arr[i].index].push(i);
+    }
 }
