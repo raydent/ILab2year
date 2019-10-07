@@ -4,18 +4,19 @@
 #include <string>
 #include <cassert>
 #include <vector>
+#include <ctime>
+#include <cstring>
+int stringtonum(char* string);
 
-
-
-int main(){
-    FILE* f = fopen("sawtest.txt", "w");
-    int arrLen = 100;
-    int cacheCapacity = 6;
-    int dispersion = 20;
-    fprintf(f, "%d %d ", cacheCapacity, arrLen);
+int main(int args, char* argv[]){
+    FILE* f = fopen(argv[1], "w");
+    int arrLen = stringtonum(argv[2]);
+    int cacheCapacity = stringtonum(argv[3]);
+    int dispersion = stringtonum(argv[4]);
+    int peaksnum = stringtonum(argv[5]);
+    //fprintf(f, "%d %d ", cacheCapacity, arrLen);
     std::cout << arrLen << ' ' << cacheCapacity << ' ';
-    srand(4541);
-    int peaksnum = 4;
+    srand(std::time(nullptr));
     for(int i = 0; i < peaksnum; i++){
         int peakval = rand() % 500;
         int sign = 1;
@@ -29,4 +30,12 @@ int main(){
             fprintf(f, "%d ", peakval + sign * (rand() % dispersion));
         }
     }
+}
+int stringtonum(char* string){
+    int n = 0;
+    int pow = 0;
+    for (int i = 0; i < strlen(string); i++){
+        n = string[i] - '0' + n * 10;
+    }
+    return n;
 }
