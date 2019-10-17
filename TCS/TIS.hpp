@@ -25,10 +25,12 @@ public:
     T x, y;
     vertex2D_t<T> A, B;
     double k;
-    vec2D_t(vertex2D_t<T> A, vertex2D_t<T> B) : x(B.x - A.x), y(B.y - A.y), A(A), B(B) {x == 0 ? k = 0 : k = y / x;}
+    vec2D_t(vertex2D_t<T> A_, vertex2D_t<T> B_) : x(B_.x - A_.x), y(B_.y - A_.y), A(A_), B(B_) {x == 0 ? k = 0 : k = y / x;}
     double cross_product(vec2D_t<T> rhs);
     double cross_product(vertex2D_t<T> rhs);
     vertex2D_t<T> findCrossing(vec2D_t<T> rhs, bool& state);
+    void linePolygonIntersections(vec2D_t<T>& crossings, vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon);
+    vec2D_t<T> makeVec(vertex2D_t<T> A_, vertex2D_t<T> B_);
 };
 
 template <typename T>
