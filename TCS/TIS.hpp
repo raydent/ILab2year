@@ -32,6 +32,7 @@ public:
     void clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon);
     vec2D_t<T> makeVec(vertex2D_t<T> A_, vertex2D_t<T> B_);
     bool rightside(vertex2D_t<T> C, vertex2D_t<T> rhs);
+    void print();
 };
 
 template <typename T>
@@ -39,7 +40,10 @@ class triangle_t {
 public:
     vertex2D_t<T> A, B, C;
     vec2D_t<T> AB, BC, CA;
-    triangle_t(vertex2D_t<T> A_, vertex2D_t<T> B_, vertex2D_t<T> C_): A(A_), B(B_), C(C_), AB(A_, B_), BC(B_, C_), CA(C_, A_) {}
+    triangle_t(vertex2D_t<T> A_, vertex2D_t<T> B_, vertex2D_t<T> C_): A(A_), B(B_), C(C_), AB{A_, B_}, BC{B_, C_}, CA{C_, A_} {
+        AB.x = B_.x - A_.x;
+        AB.y = B_.y - A_.y;
+    }
     double intersection_area(const triangle_t<T> &rhs);
     void print();
 };
