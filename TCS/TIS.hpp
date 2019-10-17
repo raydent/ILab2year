@@ -29,17 +29,19 @@ public:
     double cross_product(vec2D_t<T> rhs);
     double cross_product(vertex2D_t<T> rhs);
     vertex2D_t<T> findCrossing(vec2D_t<T> rhs, bool& state);
-    void linePolygonIntersections(vec2D_t<T>& crossings, vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon);
+    void clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon);
     vec2D_t<T> makeVec(vertex2D_t<T> A_, vertex2D_t<T> B_);
+    bool rightside(vertex2D_t<T> C, vertex2D_t<T> rhs);
 };
 
 template <typename T>
 class triangle_t {
+public:
     vertex2D_t<T> A, B, C;
     vec2D_t<T> AB, BC, CA;
-public:
     triangle_t(vertex2D_t<T> A_, vertex2D_t<T> B_, vertex2D_t<T> C_): A(A_), B(B_), C(C_), AB(A_, B_), BC(B_, C_), CA(C_, A_) {}
     double intersection_area(const triangle_t<T> &rhs);
+    void print();
 };
 template <typename T>
 void formingPolygone(std::vector<vertex2D_t<T>> & polygon, const vec2D_t<T> AB, const vertex2D_t<T> C, const triangle_t<T> &rhs);

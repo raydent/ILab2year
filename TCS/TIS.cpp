@@ -31,9 +31,10 @@ double vec2D_t<T>::cross_product(vertex2D_t<T> rhs){
     return cross_product(BC);
 }
 template <typename T>
-void vec2D_t<T>::linePolygonIntersections(vec2D_t<T>& crossings, vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon){
+void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon){
     std::vector<vertex2D_t<T>> pointarr;
     std::vector<int> arr1;
+    vertex2D_t<T> tempvert;
     bool state = 0;
     vec2D_t<T> temp{0, 0};
     int j = 0;
@@ -41,10 +42,16 @@ void vec2D_t<T>::linePolygonIntersections(vec2D_t<T>& crossings, vertex2D_t<T> C
     auto it = polygon.begin();
     auto it2 = polygon.begin();
     it2++;
+    //printf("get temp2 = %f %f %f\n", temp2.x, temp2.y, temp2.k);
     for(; it2 != polygon.end(); it++, it2++){
         k++;
-        pointarr[j] = findCrossing(temp.makeVec(*it, *(it2)), state);
+        auto temp2 = temp.makeVec(*it, *(it2));
+        tempvert = findCrossing(temp2, state);
+        printf("1\n");
         if (state == 1){
+            printf("tepvert.x = %f .y = %f\n", tempvert.x, tempvert.y);
+            pointarr[j] = tempvert;
+            printf("get\n");
             arr1[j] = k;
             j++;
         }
@@ -54,6 +61,7 @@ void vec2D_t<T>::linePolygonIntersections(vec2D_t<T>& crossings, vertex2D_t<T> C
         arr1[j] = polygon.size() - 1;
         j++;
     }
+    auto arrit = pointarr.begin();
     for(int i = 0; i < j; i++){
         it = polygon.begin();
         while(arr1[i] != 0){
@@ -62,7 +70,18 @@ void vec2D_t<T>::linePolygonIntersections(vec2D_t<T>& crossings, vertex2D_t<T> C
         for(int f = 0; f < i; f++){
             it++;
         }
-        polygon.insert(it, pointarr[i]);
+        polygon.insert(it, arrit[i]);
+    }
+    int elemnum = 0;
+    for(it = polygon.begin(); it != polygon.end(); it++){
+        if (rightside(C, *it) != 1){
+            polygon.erase(it);
+            it = polygon.begin();
+            for(int i = 0; i < elemnum - 1; i++){
+                it++;
+            }
+        }
+        elemnum++;
     }
 }
 template <typename T>
@@ -71,16 +90,22 @@ double triangle_t<T>::intersection_area(const triangle_t<T> &rhs){
     polygon.push_front(rhs.A);
     polygon.push_front(rhs.B);
     polygon.push_front(rhs.C);
-    // formingPolygone(polygon, AB, C, rhs); заменить на linePolygonIntersections
-    // formingPolygone(polygon, BC, A, rhs);
-    // formingPolygone(polygon, CA, B, rhs);
-
+    for(auto it = polygon.begin(); it != polygon.end(); it++){
+        printf("%f %f\n", it -> x, it -> y);
+    }
+    AB.clipPolygon(C, polygon);
+    BC.clipPolygon(A, polygon);
+    CA.clipPolygon(B, polygon);
+    // for(auto it = polygon.begin(); it != polygon.end(); it++){
+    //     printf("%f %f\n", it -> x, it -> y);
+    // }
+    return 0;
 }
 
 template <typename T>
-bool rightside(vec2D_t<T> AB, vertex2D_t<T> C, vertex2D_t<T> rhs){
-    double crossC = AB.cross_product(C);
-    double crossRhs = AB.cross_product(rhs);
+bool vec2D_t<T>::rightside(vertex2D_t<T> C, vertex2D_t<T> rhs){
+    double crossC = cross_product(C);
+    double crossRhs = cross_product(rhs);
     if (crossRhs == 0)
         return 1;
     if (sign(crossRhs) != sign(crossC))
@@ -91,51 +116,62 @@ bool rightside(vec2D_t<T> AB, vertex2D_t<T> C, vertex2D_t<T> rhs){
 template <typename T>
 vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
     state = 0;
+    printf("0\n");
     vertex2D_t<T> trash{0, 0};
-    if (k == rhs.k)
+    if (k == rhs.k){
+        printf("returning trash\n");
         return trash;
+    }
     else {
+        if (k == 0){
+            double x0 = A.x;
+            if (sign(x0 - rhs.A.x) != sign (x0 - rhs.B.x)){
+                printf("case 1\n");
+                state = 1;
+                double y0 = (A.x - rhs.A.x) * k + rhs.A.y;
+                vertex2D_t<T> ret{x0, y0};
+                return ret;
+            }
+            printf("returning second trash\n");
+            return trash;
+        }
+        if (rhs.k == 0){
+            printf("2\n");
+            double x0 = rhs.A.x;
+            if (sign(x0 - A.x) != sign (x0 - B.x)){
+                printf("case 2\n");
+                state = 1;
+                double y0 = (x - A.x) * k + A.y;
+                vertex2D_t<T> ret{x0, y0};
+                return ret;
+            }
+            printf("returning third trash\n");
+            return trash;
+        }
         double x0 = (rhs.A.y - A.y - rhs.k * rhs.A.x + k * A.x) / (k - rhs.k);
         if (x0 == rhs.A.x || x0 == rhs.B.x){
+            printf("case 3\n");
             state = 1;
-            vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * k};
+            vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
             return ret;
         }
         if (sign(x0 - rhs.A.x) != sign (x0 - rhs.B.x)){
+            printf("case 4\n");
             state = 1;
-            vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * k};
+            vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
             return ret;
         }
-        else
-            return trash;
+        printf("returning fourth trash\n");
+        return trash;
     }
+    return trash;
 }
+
 
 template <typename T>
-bool lineTriangleIntersecSearch(std::vector<vertex2D_t<T>> &crossings, const vec2D_t<T>& line, const triangle_t<T> &rhs){
-    bool state = 0;
-    bool state1 = 0;
-    int i = 0;
-    crossings[i] = line.findCrossing(rhs.AB, state);
-    if (state == 1){
-        i++;
-        state1 = 1;
-        state = 0;
-    }
-    crossings[i] = line.findCrossing(rhs.BC, state);
-    if (state == 1 && i == 1)
-        return 1;
-    else if (state == 1)
-        i++;
-    state = 0;
-    crossings[i] = line.findCrossing(rhs.CA, state);
-    if (state == 1)
-        return 1;
-    if (state1 ==1)
-        return 1;
-    return 0;
+void triangle_t<T>::print(){
+    std::cout << A.x << " " << A.y << " " << B.x << " " << B.y << " " << C.x << " " << C.y << " " << AB.x << " " << AB.y << " " << AB.k << "\n";
 }
-
 
 template class vertex2D_t<double>;
 template class triangle_t<double>;
