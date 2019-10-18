@@ -65,21 +65,31 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
     auto arrit = pointarr.begin();
     for(int i = 0; i < j; i++){
         it = polygon.begin();
-        while(arr1[i] != 0){
-            it++;
-            arr1[i]--;
+        if(i == 0){
+            polygon.push_front(arrit[i]);
         }
-        for(int f = 0; f < i; f++){
-            it++;
+        else{
+            while(arr1[i] != 0){
+                it++;
+                arr1[i]--;
+            }
+            for(int f = 0; f < i; f++){
+                it++;
+            }
+            printf("inserting, %f %f\n", arrit[i].x, arrit[i].y);
+            polygon.insert(it, arrit[i]);
         }
-        printf("inserting\n");
-        polygon.insert(it, arrit[i]);
     }
     int elemnum = 0;
     for(it = polygon.begin(); it != polygon.end(); it++){
         if (rightside(C, *it) != 1){
-            printf("erasing");
+            printf("erasing, %f %f\n", it -> x, it -> y);
             polygon.erase(it);
+            printf("vertices started\n");
+            for(auto specit = polygon.begin(); specit != polygon.end(); specit++){
+                printf("%f %f\n", specit -> x, specit -> y);
+            }
+            printf("vertices ended\n");
             it = polygon.begin();
             for(int i = 0; i < elemnum - 1; i++){
                 it++;
@@ -125,6 +135,7 @@ template <typename T>
 bool vec2D_t<T>::rightside(vertex2D_t<T> C, vertex2D_t<T> rhs){
     double crossC = cross_product(C);
     double crossRhs = cross_product(rhs);
+    //printf("crossC = %f, crossRhs = %f, rhs.x = %f,rhs.y = %f,  C.x = %f, C.y = %f\n", crossC, crossRhs, rhs.x, rhs.y, C.x, C.y);
     if (crossRhs == 0)
         return 1;
     if (sign(crossRhs) != sign(crossC))
@@ -137,6 +148,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
     state = 0;
     vertex2D_t<T> trash{0, 0};
     if (k == rhs.k){
+        //printf("case0\n");
         return trash;
     }
     else {
@@ -150,6 +162,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                     state = 1;
                     return ret;
                 }
+                printf("case2.75\n");
                 return trash;
             }
             double x0 = A.x;
@@ -166,18 +179,21 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 printf("x0 = %f, y0 = %f\n", x0, y0);
                 return ret;
             }
+            printf("case2.25\n");
             return trash;
         }
         if (rhs.k == 0){
             if (rhs.y == 0){
                 double y0 = rhs.A.y;
-                if (sign(y0 - A.y) != sign(y0 - B.y)){
+                printf("y0 = %f\n", y0);
+                double x0 = (y0 - A.y) / k + A.x;
+                if (sign(x0 - rhs.A.x) != sign(x0 - rhs.B.x)){
                     printf("case2.5\n");
-                    double x0 = (y0 - A.y) / k + A.x;
                     vertex2D_t<T> ret{x0, y0};
                     state = 1;
                     return ret;
                 }
+                printf("case2.88\n");
                 return trash;
             }
             double x0 = rhs.A.x;
@@ -201,6 +217,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
         }
         if (sign(x0 - rhs.A.x) != sign (x0 - rhs.B.x)){
             printf("case5\n");
+            printf("x0 = %f, y0 = %f\n", x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k);
             state = 1;
             vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
             return ret;
