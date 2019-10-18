@@ -58,25 +58,29 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
     }
     tempvert = findCrossing(temp.makeVec(*(it), *polygon.begin()), state);
     if (state == 1){
+        bool uniqueness = 1;
         pointarr.push_back(tempvert);
         arr1.push_back(polygon.size() - 1);
         j++;
     }
     auto arrit = pointarr.begin();
-    for(int i = 0; i < j; i++){
-        it = polygon.begin();
-        if(i == 0){
-            polygon.push_front(arrit[i]);
+    it = polygon.begin();
+    for(int i = 0; i < arr1.capacity(); i++){
+        if(arr1[i] == 0){
+            auto tempit = polygon.end();
+            tempit--;
+            printf("inserting in the start, %f %f\n", arrit[i].x, arrit[i].y);
+            polygon.insert(tempit, arrit[i]);
         }
         else{
             while(arr1[i] != 0){
                 it++;
                 arr1[i]--;
             }
-            for(int f = 0; f < i; f++){
-                it++;
-            }
-            printf("inserting, %f %f\n", arrit[i].x, arrit[i].y);
+            // for(int f = 0; f < i; f++){
+            //     it++;
+            // }
+            printf("inserting before %f %f, %f %f\n", it -> x, it -> y, arrit[i].x, arrit[i].y);
             polygon.insert(it, arrit[i]);
         }
     }
