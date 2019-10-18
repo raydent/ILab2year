@@ -59,29 +59,45 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
     tempvert = findCrossing(temp.makeVec(*(it), *polygon.begin()), state);
     if (state == 1){
         bool uniqueness = 1;
-        pointarr.push_back(tempvert);
-        arr1.push_back(polygon.size() - 1);
-        j++;
+        for(auto uniquecheckit = polygon.begin(); uniquecheckit != polygon.end(); uniquecheckit++){
+            if (tempvert == *uniquecheckit){
+                uniqueness = 0;
+                break;
+            }
+        }
+        if (uniqueness != 0){
+            pointarr.push_back(tempvert);
+            arr1.push_back(polygon.size() - 1);
+            j++;
+        }
     }
     auto arrit = pointarr.begin();
     it = polygon.begin();
     for(int i = 0; i < arr1.capacity(); i++){
+        //it = polygon.begin();
         if(arr1[i] == 0){
-            auto tempit = polygon.end();
-            tempit--;
+            auto tempit = polygon.begin();
+            tempit++;
             printf("inserting in the start, %f %f\n", arrit[i].x, arrit[i].y);
             polygon.insert(tempit, arrit[i]);
         }
         else{
+            arr1[i] -= i;
             while(arr1[i] != 0){
                 it++;
                 arr1[i]--;
             }
-            // for(int f = 0; f < i; f++){
-            //     it++;
-            // }
-            printf("inserting before %f %f, %f %f\n", it -> x, it -> y, arrit[i].x, arrit[i].y);
-            polygon.insert(it, arrit[i]);
+            for(int f = 0; f < i; f++){
+                it++;
+            }
+            if (it == polygon.begin()){
+                printf("pushing front %f %f", arrit[i].x, arrit[i].y);
+                polygon.push_front(arrit[i]);
+            }
+            else{
+                printf("inserting before %f %f, %f %f\n", it -> x, it -> y, arrit[i].x, arrit[i].y);
+                polygon.insert(it, arrit[i]);
+            }
         }
     }
     int elemnum = 0;
@@ -160,7 +176,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
             if (y == 0){
                 double y0 = A.y;
                 if (sign(y0 - rhs.A.y) != sign(y0 - rhs.B.y)){
-                    printf("case2.50\n");
+                    printf("case2.50, x0 = %f y0 = %f \n", (y0 - rhs.A.y) / rhs.k + rhs.A.x , y0);
                     double x0 = (y0 - rhs.A.y) / rhs.k + rhs.A.x;
                     vertex2D_t<T> ret{x0, y0};
                     state = 1;
@@ -192,7 +208,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 printf("y0 = %f\n", y0);
                 double x0 = (y0 - A.y) / k + A.x;
                 if (sign(x0 - rhs.A.x) != sign(x0 - rhs.B.x)){
-                    printf("case2.5\n");
+                    printf("case2.5, x0 = %f, y0 = %f\n", x0, y0);
                     vertex2D_t<T> ret{x0, y0};
                     state = 1;
                     return ret;
