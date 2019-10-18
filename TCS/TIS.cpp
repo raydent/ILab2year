@@ -115,9 +115,9 @@ double triangle_t<T>::intersection_area(const triangle_t<T> &rhs){
         printf("%f %f\n", it -> x, it -> y);
     }
     CA.clipPolygon(B, polygon);
-    // for(auto it = polygon.begin(); it != polygon.end(); it++){
-    //     printf("%f %f\n", it -> x, it -> y);
-    // }
+    for(auto it = polygon.begin(); it != polygon.end(); it++){
+        printf("%f %f\n", it -> x, it -> y);
+    }
     return 0;
 }
 
@@ -141,6 +141,17 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
     }
     else {
         if (k == 0){
+            if (y == 0){
+                double y0 = A.y;
+                if (sign(y0 - rhs.A.y) != sign(y0 - rhs.B.y)){
+                    printf("case2.50\n");
+                    double x0 = (y0 - rhs.A.y) / rhs.k + rhs.A.x;
+                    vertex2D_t<T> ret{x0, y0};
+                    state = 1;
+                    return ret;
+                }
+                return trash;
+            }
             double x0 = A.x;
             if (x0 == rhs.A.x || x0 == rhs.B.x){
                 printf("case1\n");
@@ -158,6 +169,17 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
             return trash;
         }
         if (rhs.k == 0){
+            if (rhs.y == 0){
+                double y0 = rhs.A.y;
+                if (sign(y0 - A.y) != sign(y0 - B.y)){
+                    printf("case2.5\n");
+                    double x0 = (y0 - A.y) / k + A.x;
+                    vertex2D_t<T> ret{x0, y0};
+                    state = 1;
+                    return ret;
+                }
+                return trash;
+            }
             double x0 = rhs.A.x;
             if (sign(x0 - A.x) != sign (x0 - B.x)){
                 printf("case3\n");
@@ -189,9 +211,6 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
 }
 template <typename T>
 void vec2D_t<T>::print(){
-    T x, y;
-    vertex2D_t<T> A, B;
-    double k;
     //printf("x = %f y = %f A.x = %f A.y = %f B.x = %f B.y = %f k = %f\n", x, y, A.x, A.y, B.x, B.y, k);
     std::cout << x << " " << y << " " << A.x << " " << A.y << " " << B.x << " " << B.y << " " << k << "\n";
 }
