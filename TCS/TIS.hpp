@@ -46,3 +46,5 @@ public:
 };
 template <typename T>
 void formingPolygone(std::vector<vertex2D_t<T>> & polygon, const vec2D_t<T> AB, const vertex2D_t<T> C, const triangle_t<T> &rhs);
+template <typename T>
+double calc_square(std::list<vertex2D_t<T>> polygon);

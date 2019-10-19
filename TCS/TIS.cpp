@@ -102,9 +102,9 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
             }
             printf("vertices ended\n");
             it = polygon.begin();
-            for(int i = 0; i < elemnum - 1; i++){
-                it++;
-            }
+            // for(int i = 0; i < elemnum - 1; i++){
+            //     it++;
+            // }
         }
         elemnum++;
     }
@@ -136,9 +136,12 @@ double triangle_t<T>::intersection_area(const triangle_t<T> &rhs){
         printf("%f %f\n", it -> x, it -> y);
     }
     CA.clipPolygon(B, polygon);
+    printf("here\n");
     for(auto it = polygon.begin(); it != polygon.end(); it++){
         printf("%f %f\n", it -> x, it -> y);
     }
+    double square = calc_square(polygon);
+    printf("square = %f\n", square);
     return 0;
 }
 
@@ -146,6 +149,8 @@ template <typename T>
 bool vec2D_t<T>::rightside(vertex2D_t<T> C, vertex2D_t<T> rhs){
     double crossC = cross_product(C);
     double crossRhs = cross_product(rhs);
+    // double prod = lhs.BC.cross_product(lhs.A);
+    printf("crossC = %f crossRhs = %f\n", crossC, crossRhs);
     //printf("crossC = %f, crossRhs = %f, rhs.x = %f,rhs.y = %f,  C.x = %f, C.y = %f\n", crossC, crossRhs, rhs.x, rhs.y, C.x, C.y);
     if (crossRhs == 0)
         return 1;
@@ -166,8 +171,14 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
         if (k == 0){
             if (y == 0){
                 double y0 = A.y;
+                if (y0 == rhs.A.y || y0 == rhs.B.y){
+                    printf("y0 case\n");
+                    state = 0;
+                    return trash;
+                }
                 if (sign(y0 - rhs.A.y) != sign(y0 - rhs.B.y)){
                     printf("case2.50\n");
+                    printf("y0 = %f\n", y0);
                     double x0 = (y0 - rhs.A.y) / rhs.k + rhs.A.x;
                     vertex2D_t<T> ret{x0, y0};
                     state = 1;
@@ -198,6 +209,11 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 double y0 = rhs.A.y;
                 printf("y0 = %f\n", y0);
                 double x0 = (y0 - A.y) / k + A.x;
+                if (x0 == rhs.A.x || x0 == rhs.B.x){
+                    printf("new case\n");
+                    state = 0;
+                    return trash;
+                }
                 if (sign(x0 - rhs.A.x) != sign(x0 - rhs.B.x)){
                     printf("case2.5\n");
                     vertex2D_t<T> ret{x0, y0};
@@ -208,6 +224,11 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 return trash;
             }
             double x0 = rhs.A.x;
+            if (x0 == A.x || x0 == B.x){
+                printf("case6\n");
+                state = 0;
+                return trash;
+            }
             if (sign(x0 - A.x) != sign (x0 - B.x)){
                 printf("case3\n");
                 rhs.print();
@@ -246,6 +267,24 @@ void vec2D_t<T>::print(){
 template <typename T>
 void triangle_t<T>::print(){
     std::cout << A.x << " " << A.y << " " << B.x << " " << B.y << " " << C.x << " " << C.y << " " << AB.x << " " << AB.y << " " << AB.k << "\n";
+}
+template <typename T>
+double calc_square(std::list<vertex2D_t<T>> polygon){
+    double square = 0;
+    auto it1 = polygon.begin();
+    auto it2 = polygon.begin();
+    it2++;
+    for(; it2 != polygon.end(); it1++, it2++){
+        square += (it1 -> x) * (it2 -> y) - (it2 -> x)*(it1 -> y);
+        printf("square = %f\n", square);
+    }
+    it1 = polygon.end();
+    it1--;
+    it2 = polygon.begin();
+    square += (it1 -> x) * (it2 -> y) - (it2 -> x)*(it1 -> y);
+    printf("square = %f\n", square);
+    square /= 2;
+    return std::abs(square);
 }
 
 template class vertex2D_t<double>;
