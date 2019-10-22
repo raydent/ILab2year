@@ -107,7 +107,7 @@ bool vec2D_t<T>::rightside(vertex2D_t<T> C, vertex2D_t<T> rhs){
     double crossRhs = cross_product(rhs);
     if (crossRhs == 0)
         return 1;
-    if (sign(crossRhs) != sign(crossC))
+    if (std::signbit(crossRhs) != std::signbit(crossC))
         return 0;
     return 1;
 }
@@ -127,7 +127,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                     state = 0;
                     return trash;
                 }
-                if (sign(y0 - rhs.A.y) != sign(y0 - rhs.B.y)){
+                if (std::signbit(y0 - rhs.A.y) != std::signbit(y0 - rhs.B.y)){
                     double x0 = (y0 - rhs.A.y) / rhs.k + rhs.A.x;
                     vertex2D_t<T> ret{x0, y0};
                     state = 1;
@@ -140,7 +140,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 state = 0;
                 return trash;
             }
-            if (sign(x0 - rhs.A.x) != sign (x0 - rhs.B.x)){
+            if (std::signbit(x0 - rhs.A.x) != std::signbit (x0 - rhs.B.x)){
                 state = 1;
                 double y0 = (A.x - rhs.A.x) * k + rhs.A.y;
                 vertex2D_t<T> ret{x0, y0};
@@ -156,7 +156,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                     state = 0;
                     return trash;
                 }
-                if (sign(x0 - rhs.A.x) != sign(x0 - rhs.B.x)){
+                if (std::signbit(x0 - rhs.A.x) != std::signbit(x0 - rhs.B.x)){
                     vertex2D_t<T> ret{x0, y0};
                     state = 1;
                     return ret;
@@ -168,7 +168,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 state = 0;
                 return trash;
             }
-            if (sign(x0 - A.x) != sign (x0 - B.x)){
+            if (std::signbit(x0 - A.x) != std::signbit (x0 - B.x)){
                 //rhs.print();
                 //print();
                 state = 1;
@@ -184,7 +184,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
             vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
             return ret;
         }
-        if (sign(x0 - rhs.A.x) != sign (x0 - rhs.B.x)){
+        if (std::signbit(x0 - rhs.A.x) != std::signbit (x0 - rhs.B.x)){
             state = 1;
             vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
             return ret;
