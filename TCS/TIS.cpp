@@ -57,7 +57,6 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
     }
     tempvert = findCrossing(temp.makeVec(*(it), *polygon.begin()), state);
     if (state == 1){
-        bool uniqueness = 1;
         pointarr.push_back(tempvert);
         arr1.push_back(0);
     }
@@ -65,8 +64,6 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
     it = polygon.begin();
     for(int i = 0; i < arr1.capacity(); i++){
         if(arr1[i] == 0){
-            auto tempit = polygon.begin();
-            tempit++;
             polygon.push_front(arrit[i]);
         }
         else{
@@ -89,7 +86,7 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
         }
         elemnum++;
     }
-    polygon.unique();
+    //polygon.unique();
 }
 template <typename T>
 double triangle_t<T>::intersection_area(const triangle_t<T> &rhs){
@@ -119,7 +116,7 @@ template <typename T>
 vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
     state = 0;
     vertex2D_t<T> trash{0, 0};
-    if (k == rhs.k){
+    if (k == rhs.k && ((y == rhs.y) || (x == rhs.x))){
         return trash;
     }
     else {
@@ -172,8 +169,8 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 return trash;
             }
             if (sign(x0 - A.x) != sign (x0 - B.x)){
-                rhs.print();
-                print();
+                //rhs.print();
+                //print();
                 state = 1;
                 double y0 = (x - A.x) * k + A.y;
                 vertex2D_t<T> ret{x0, y0};
