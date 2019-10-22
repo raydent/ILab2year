@@ -38,7 +38,7 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
     std::vector<vertex2D_t<T>> pointarr;
     std::vector<int> arr1;
     vertex2D_t<T> tempvert;
-    bool state = 0;
+    bool state = false;
     vec2D_t<T> temp{0, 0};
     int j = 0;
     int elempos = 0;
@@ -50,13 +50,13 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
         elempos++;
         auto temp2 = temp.makeVec(*it, *(it2));
         tempvert = findCrossing(temp2, state);
-        if (state == 1){
+        if (state == true){
             pointarr.push_back(tempvert);
             arr1.push_back(elempos);
         }
     }
     tempvert = findCrossing(temp.makeVec(*(it), *polygon.begin()), state);
-    if (state == 1){
+    if (state == true){
         pointarr.push_back(tempvert);
         arr1.push_back(0);
     }
@@ -114,7 +114,7 @@ bool vec2D_t<T>::rightside(vertex2D_t<T> C, vertex2D_t<T> rhs){
 
 template <typename T>
 vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
-    state = 0;
+    state = false;
     vertex2D_t<T> trash{0, 0};
     if (k == rhs.k && ((y == rhs.y) || (x == rhs.x))){
         return trash;
@@ -124,24 +124,24 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
             if (y == 0){
                 double y0 = A.y;
                 if (y0 == rhs.A.y || y0 == rhs.B.y){
-                    state = 0;
+                    state = false;
                     return trash;
                 }
                 if (std::signbit(y0 - rhs.A.y) != std::signbit(y0 - rhs.B.y)){
                     double x0 = (y0 - rhs.A.y) / rhs.k + rhs.A.x;
                     vertex2D_t<T> ret{x0, y0};
-                    state = 1;
+                    state = true;
                     return ret;
                 }
                 return trash;
             }
             double x0 = A.x;
             if (x0 == rhs.A.x || x0 == rhs.B.x){
-                state = 0;
+                state = false;
                 return trash;
             }
             if (std::signbit(x0 - rhs.A.x) != std::signbit (x0 - rhs.B.x)){
-                state = 1;
+                state = true;
                 double y0 = (A.x - rhs.A.x) * k + rhs.A.y;
                 vertex2D_t<T> ret{x0, y0};
                 return ret;
@@ -153,25 +153,25 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 double y0 = rhs.A.y;
                 double x0 = (y0 - A.y) / k + A.x;
                 if (x0 == rhs.A.x || x0 == rhs.B.x){
-                    state = 0;
+                    state = false;
                     return trash;
                 }
                 if (std::signbit(x0 - rhs.A.x) != std::signbit(x0 - rhs.B.x)){
                     vertex2D_t<T> ret{x0, y0};
-                    state = 1;
+                    state = true;
                     return ret;
                 }
                 return trash;
             }
             double x0 = rhs.A.x;
             if (x0 == A.x || x0 == B.x){
-                state = 0;
+                state = false;
                 return trash;
             }
             if (std::signbit(x0 - A.x) != std::signbit (x0 - B.x)){
                 //rhs.print();
                 //print();
-                state = 1;
+                state = true;
                 double y0 = (x - A.x) * k + A.y;
                 vertex2D_t<T> ret{x0, y0};
                 return ret;
@@ -180,12 +180,12 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
         }
         double x0 = (rhs.A.y - A.y - rhs.k * rhs.A.x + k * A.x) / (k - rhs.k);
         if (x0 == rhs.A.x || x0 == rhs.B.x){
-            state = 0;
+            state = false;
             vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
             return ret;
         }
         if (std::signbit(x0 - rhs.A.x) != std::signbit (x0 - rhs.B.x)){
-            state = 1;
+            state = true;
             vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
             return ret;
         }
