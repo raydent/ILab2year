@@ -25,6 +25,7 @@ struct polygon_t {
     void push(int position, vertex2D_t<T>& elem);
     double calc_square();
 };
+
 template <typename T>
 struct vec2D_t {
     T x, y;
@@ -40,7 +41,6 @@ struct vec2D_t {
     void remove_wrong_points_from_polygon(polygon_t<T>& polygon, vertex2D_t<T> C);
     void print();
 };
-
 
 template <typename T>
 struct triangle_t {
@@ -58,6 +58,7 @@ template <typename T>
 bool operator == (const vertex2D_t<T> &c1, const vertex2D_t<T> &c2) {
     return (c1.x == c2.x && c1.y == c2.y);
 }
+
 template <typename T>
 void vertex2D_t<T>::add(vertex2D_t<T> rhs){
     x += rhs.x;
@@ -74,9 +75,6 @@ vec2D_t<T> vec2D_t<T>::makeVec(vertex2D_t<T> A_, vertex2D_t<T> B_){
     return *this;
 }
 
-
-
-
 template <typename T>
 double vec2D_t<T>::cross_product(vec2D_t<T> rhs){
     return ((y * rhs.x) - (x * rhs.y));
@@ -87,6 +85,7 @@ double vec2D_t<T>::cross_product(vertex2D_t<T> rhs){
     vec2D_t BC {B, rhs};
     return cross_product(BC);
 }
+
 template <typename T>
 void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, polygon_t<T>& polygon){
     std::vector<vertex2D_t<T>> pointarr;
@@ -123,6 +122,7 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, polygon_t<T>& polygon){
     }
     remove_wrong_points_from_polygon(polygon, C);
 }
+
 template <typename T>
 double triangle_t<T>::intersection_area(const triangle_t<T> &rhs){
     polygon_t<T> polygon(rhs.A, rhs.B, rhs.C);
@@ -223,6 +223,7 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
     }
     return trash;
 }
+
 template <typename T>
 void vec2D_t<T>::print(){
     std::cout << x << " " << y << " " << A.x << " " << A.y << " " << B.x << " " << B.y << " " << k << "\n";
@@ -266,6 +267,7 @@ void polygon_t<T>::push(int elempos, vertex2D_t<T>& elem){
         list.insert(it, elem);
     }
 }
+
 template <typename T>
 void vec2D_t<T>::remove_wrong_points_from_polygon(polygon_t<T>& polygon, vertex2D_t<T> C){
     for(auto it = polygon.list.begin(); it != polygon.list.end(); it++){
