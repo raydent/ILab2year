@@ -92,7 +92,7 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, polygon_t<T>& polygon){
     std::vector<vertex2D_t<T>> pointarr;
     std::vector<int> arr1;
     vertex2D_t<T> tempvert;
-    bool state = false; //  проверяет, пересекает ли секущая линия отрезок второго треугольника, true/false
+    bool state = false; //  проверяет, пересекает ли секущая прямая отрезок второго полигона, true/false
     vec2D_t<T> temp{0, 0};
     int j = 0;
     int elempos = 0;
