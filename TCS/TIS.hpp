@@ -196,13 +196,9 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 return trash;
             }
             double x0 = rhs.A.x;
-            if (x0 == A.x || x0 == B.x){
-                state = false;
-                return trash;
-            }
             if (std::signbit(x0 - A.x) != std::signbit (x0 - B.x)){
                 state = true;
-                double y0 = (x - A.x) * k + A.y;
+                double y0 = (x0 - A.x) * k + A.y;
                 vertex2D_t<T> ret{x0, y0};
                 return ret;
             }
