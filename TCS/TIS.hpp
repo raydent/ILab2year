@@ -18,6 +18,13 @@ struct vertex2D_t {
 };
 
 template <typename T>
+struct polygon_t {
+    std::list<vertex2D_t<T>> list;
+    polygon_t(vertex2D_t<T> A_, vertex2D_t<T> B_, vertex2D_t<T> C_) {list.push_front(A_); list.push_front(B_); list.push_front(C_);}
+    void push(int position, vertex2D_t<T>& elem);
+    double calc_square();
+};
+template <typename T>
 struct vec2D_t {
     T x, y;
     vertex2D_t<T> A, B;
@@ -26,11 +33,13 @@ struct vec2D_t {
     double cross_product(vec2D_t<T> rhs);
     double cross_product(vertex2D_t<T> rhs);
     vertex2D_t<T> findCrossing(vec2D_t<T> rhs, bool& state);
-    void clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon);
+    void clipPolygon(vertex2D_t<T> C, polygon_t<T>& polygon);
     vec2D_t<T> makeVec(vertex2D_t<T> A_, vertex2D_t<T> B_);
     bool rightside(vertex2D_t<T> C, vertex2D_t<T> rhs);
+    void remove_wrong_points_from_polygon(polygon_t<T>& polygon, vertex2D_t<T> C);
     void print();
 };
+
 
 template <typename T>
 struct triangle_t {
@@ -40,8 +49,7 @@ struct triangle_t {
     double intersection_area(const triangle_t<T> &rhs);
     void print();
 };
-template <typename T>
-void formingPolygone(std::vector<vertex2D_t<T>> & polygon, const vec2D_t<T> AB, const vertex2D_t<T> C, const triangle_t<T> &rhs);
+
 template <typename T>
 double calc_square(std::list<vertex2D_t<T>> polygon);
 
@@ -67,6 +75,7 @@ vec2D_t<T> vec2D_t<T>::makeVec(vertex2D_t<T> A_, vertex2D_t<T> B_){
 
 
 
+
 template <typename T>
 double vec2D_t<T>::cross_product(vec2D_t<T> rhs){
     return ((y * rhs.x) - (x * rhs.y));
@@ -78,7 +87,7 @@ double vec2D_t<T>::cross_product(vertex2D_t<T> rhs){
     return cross_product(BC);
 }
 template <typename T>
-void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon){
+void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, polygon_t<T>& polygon){
     std::vector<vertex2D_t<T>> pointarr;
     std::vector<int> arr1;
     vertex2D_t<T> tempvert;
@@ -86,11 +95,11 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
     vec2D_t<T> temp{0, 0};
     int j = 0;
     int elempos = 0;
-    auto it = polygon.begin();
-    auto it2 = polygon.begin();
-    assert(it2 != polygon.end());
+    auto it = polygon.list.begin();
+    auto it2 = polygon.list.begin();
+    assert(it2 != polygon.list.end());
     it2++;
-    for(; it2 != polygon.end(); it++, it2++){
+    for(; it2 != polygon.list.end(); it++, it2++){
         elempos++;
         auto temp2 = temp.makeVec(*it, *(it2));
         tempvert = findCrossing(temp2, state);
@@ -99,49 +108,27 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, std::list<vertex2D_t<T>>& polygon)
             arr1.push_back(elempos);
         }
     }
-    tempvert = findCrossing(temp.makeVec(*(it), *polygon.begin()), state);
+    tempvert = findCrossing(temp.makeVec(*(it), *polygon.list.begin()), state);
     if (state == true){
         pointarr.push_back(tempvert);
         arr1.push_back(0);
     }
     auto arrit = pointarr.begin();
-    it = polygon.begin();
+    it = polygon.list.begin();
     for(int i = 0; i < arr1.capacity(); i++){
-        if(arr1[i] == 0){
-            polygon.push_front(arrit[i]);
-        }
-        else{
-            arr1[i] -= i;
-            while(arr1[i] != 0){
-                it++;
-                arr1[i]--;
-            }
-            if (it == polygon.end()){
-                it--;
-            }
-            polygon.insert(it, arrit[i]);
-        }
+        if (arr1[i] != 0)
+            arr1[i] += i;
+        polygon.push(arr1[i], arrit[i]);
     }
-    int elemnum = 0;
-    for(it = polygon.begin(); it != polygon.end(); it++){
-        if (rightside(C, *it) != 1){
-            polygon.erase(it);
-            it = polygon.begin();
-        }
-        elemnum++;
-    }
-    //polygon.unique();
+    remove_wrong_points_from_polygon(polygon, C);
 }
 template <typename T>
 double triangle_t<T>::intersection_area(const triangle_t<T> &rhs){
-    std::list<vertex2D_t<T>> polygon;
-    polygon.push_front(rhs.A);
-    polygon.push_front(rhs.B);
-    polygon.push_front(rhs.C);
+    polygon_t<T> polygon(rhs.A, rhs.B, rhs.C);
     AB.clipPolygon(C, polygon);
     BC.clipPolygon(A, polygon);
     CA.clipPolygon(B, polygon);
-    double square = calc_square(polygon);
+    double square = polygon.calc_square();
     return square;
 }
 
@@ -213,8 +200,6 @@ vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
                 return trash;
             }
             if (std::signbit(x0 - A.x) != std::signbit (x0 - B.x)){
-                //rhs.print();
-                //print();
                 state = true;
                 double y0 = (x - A.x) * k + A.y;
                 vertex2D_t<T> ret{x0, y0};
@@ -248,18 +233,44 @@ void triangle_t<T>::print(){
 }
 
 template <typename T>
-double calc_square(std::list<vertex2D_t<T>> polygon){
+double polygon_t<T>::calc_square(){
     double square = 0;
-    auto it1 = polygon.begin();
-    auto it2 = polygon.begin();
+    auto it1 = list.begin();
+    auto it2 = list.begin();
     it2++;
-    for(; it2 != polygon.end(); it1++, it2++){
+    for(; it2 != list.end(); it1++, it2++){
         square += (it1 -> x) * (it2 -> y) - (it2 -> x)*(it1 -> y);
     }
-    it1 = polygon.end();
+    it1 = list.end();
     it1--;
-    it2 = polygon.begin();
+    it2 = list.begin();
     square += (it1 -> x) * (it2 -> y) - (it2 -> x)*(it1 -> y);
     square /= 2;
     return std::abs(square);
+}
+
+template <typename T>
+void polygon_t<T>::push(int elempos, vertex2D_t<T>& elem){
+    if (elempos == 0)
+        list.push_front(elem);
+    else{
+        auto it = list.begin();
+        while(elempos != 0){
+            it++;
+            elempos--;
+        }
+        if (it == list.end()){
+            it--;
+        }
+        list.insert(it, elem);
+    }
+}
+template <typename T>
+void vec2D_t<T>::remove_wrong_points_from_polygon(polygon_t<T>& polygon, vertex2D_t<T> C){
+    for(auto it = polygon.list.begin(); it != polygon.list.end(); it++){
+        if (rightside(C, *it) != 1){
+            polygon.list.erase(it);
+            it = polygon.list.begin();
+        }
+    }
 }
