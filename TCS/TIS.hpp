@@ -20,6 +20,7 @@ struct vertex2D_t {
 template <typename T>
 struct polygon_t {
     std::list<vertex2D_t<T>> list;
+    polygon_t(){;}
     polygon_t(vertex2D_t<T> A_, vertex2D_t<T> B_, vertex2D_t<T> C_) {list.push_front(A_); list.push_front(B_); list.push_front(C_);}
     void push(int position, vertex2D_t<T>& elem);
     double calc_square();
