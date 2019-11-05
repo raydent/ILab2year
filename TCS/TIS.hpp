@@ -35,7 +35,7 @@ struct vec2D_t {
     vec2D_t(vertex2D_t<T> A_, vertex2D_t<T> B_) : x(B_.x - A_.x), y(B_.y - A_.y), A(A_), B(B_) {x == 0 ? k = 0 : k = y / x;}
     double cross_product(vec2D_t<T> rhs);
     double cross_product(vertex2D_t<T> rhs);
-    vertex2D_t<T> findCrossing(vec2D_t<T> rhs, bool& state);
+    bool findCrossing(vec2D_t<T> rhs, vertex2D_t<T>& ret1);
     void clipPolygon(vertex2D_t<T> C, polygon_t<T>& polygon);
     vec2D_t<T> makeVec(vertex2D_t<T> A_, vertex2D_t<T> B_);
     bool rightside(vertex2D_t<T> C, vertex2D_t<T> rhs);
@@ -98,19 +98,17 @@ void vec2D_t<T>::clipPolygon(vertex2D_t<T> C, polygon_t<T>& polygon){
     int elempos = 0;
     auto it = polygon.list.begin();
     auto it2 = polygon.list.begin();
-    assert(it2 != polygon.list.end());
+    //assert(it2 != polygon.list.end());
     it2++;
     for(; it2 != polygon.list.end(); it++, it2++){
         elempos++;
         auto temp2 = temp.makeVec(*it, *(it2));
-        tempvert = findCrossing(temp2, state);
-        if (state == true){
+        if (findCrossing(temp2, tempvert)) {
             pointarr.push_back(tempvert);
             arr1.push_back(elempos);
         }
     }
-    tempvert = findCrossing(temp.makeVec(*(it), *polygon.list.begin()), state);
-    if (state == true){
+    if (findCrossing(temp.makeVec(*(it), *polygon.list.begin()), tempvert)) {
         pointarr.push_back(tempvert);
         arr1.push_back(0);
     }
@@ -146,85 +144,75 @@ bool vec2D_t<T>::rightside(vertex2D_t<T> C, vertex2D_t<T> rhs){
 }
 
 template <typename T>
-vertex2D_t<T> vec2D_t<T>::findCrossing(vec2D_t<T> rhs, bool& state){
-    state = false;
+bool vec2D_t<T>::findCrossing(vec2D_t<T> rhs, vertex2D_t<T>& ret1){
     vertex2D_t<T> trash{0, 0};
     if (k == rhs.k && ((y == rhs.y) || (x == rhs.x))){
-        return trash;
+        return false;
     }
     else {
         if (k == 0){
             if (y == 0){
                 double y0 = A.y;
                 if (y0 == rhs.A.y || y0 == rhs.B.y){
-                    state = false;
-                    return trash;
+                    return false;
                 }
                 if (std::signbit(y0 - rhs.A.y) != std::signbit(y0 - rhs.B.y)){
                     double x0 = (y0 - rhs.A.y) / rhs.k + rhs.A.x;
                     vertex2D_t<T> ret{x0, y0};
-                    state = true;
-                    printf("case 1\n");
-                    return ret;
+                    ret1 = ret;
+                    return true;
                 }
-                return trash;
+                return false;
             }
             double x0 = A.x;
             if (x0 == rhs.A.x || x0 == rhs.B.x){
-                state = false;
-                return trash;
+                return false;
             }
             if (std::signbit(x0 - rhs.A.x) != std::signbit (x0 - rhs.B.x)){
-                state = true;
                 double y0 = (A.x - rhs.A.x) * rhs.k + rhs.A.y;
                 vertex2D_t<T> ret{x0, y0};
-                printf("A.x = %f A.y = %f B.x = %f B.y = %f\n rhs.A.x = %f rhs.A.y = %f rhs.B.x = %f rhs.B.y = %f case 2\n", A.x, A.y, B.x, B.y, rhs.A.x, rhs.A.y, rhs.B.x, rhs.B.y);
-                return ret;
+                ret1 = ret;
+                return true;
             }
-            return trash;
+            return false;
         }
         if (rhs.k == 0){
             if (rhs.y == 0){
                 double y0 = rhs.A.y;
                 double x0 = (y0 - A.y) / k + A.x;
                 if (x0 == rhs.A.x || x0 == rhs.B.x){
-                    state = false;
-                    return trash;
+                    return false;
                 }
                 if (std::signbit(x0 - rhs.A.x) != std::signbit(x0 - rhs.B.x)){
                     vertex2D_t<T> ret{x0, y0};
-                    state = true;
-                    printf("case 3\n");
-                    return ret;
+                    ret1 = ret;
+                    return true;
                 }
-                return trash;
+                return false;
             }
             double x0 = rhs.A.x;
             if (std::signbit(x0 - A.x) != std::signbit (x0 - B.x)){
-                state = true;
                 double y0 = (x0 - A.x) * k + A.y;
                 vertex2D_t<T> ret{x0, y0};
-                printf("case 4\n");
-                return ret;
+                ret1 = ret;
+                return true;
             }
-            return trash;
+            return false;
         }
         double x0 = (rhs.A.y - A.y - rhs.k * rhs.A.x + k * A.x) / (k - rhs.k);
         if (x0 == rhs.A.x || x0 == rhs.B.x){
-            state = false;
             vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
-            printf("case 5\n");
-            return ret;
+            ret1 = ret;
+            return true;
         }
         if (std::signbit(x0 - rhs.A.x) != std::signbit (x0 - rhs.B.x)){
-            state = true;
             vertex2D_t<T> ret{x0, rhs.A.y + (x0 - rhs.A.x) * rhs.k};
-            printf("case 6\n");
-            return ret;
+            ret1 = ret;
+            return true;
         }
-        return trash;
+        return false;
     }
-    return trash;
+    return false;
 }
 
 template <typename T>
@@ -276,7 +264,7 @@ void vec2D_t<T>::remove_wrong_points_from_polygon(polygon_t<T>& polygon, vertex2
     for(auto it = polygon.list.begin(); it != polygon.list.end(); it++){
         if (rightside(C, *it) != 1){
             auto tempit = it;
-            tempit++;
+            tempit--;
             polygon.list.erase(it);
             it = tempit;
         }
