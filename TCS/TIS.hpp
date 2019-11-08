@@ -150,6 +150,25 @@ bool vec2D_t<T>::findCrossing(vec2D_t<T> rhs, vertex2D_t<T>& ret1){
     }
     else {
         if (k == 0){
+            if (rhs.k == 0){
+                double y0 = 0;
+                double x0 = 0;
+                if (y == 0) {
+                    y0 = A.y;
+                    x0 = rhs.A.x;
+                    if (std::signbit(y0 - rhs.A.y) == std::signbit(y0 - rhs.B.y))
+                        return false;
+                }
+                else  {
+                    y0 = rhs.A.y;
+                    x0 = A.x;
+                    if (std::signbit(x0 - rhs.A.x) == std::signbit(x0 - rhs.B.x))
+                        return false;
+                }
+                vertex2D_t<T> ret{x0, y0};
+                ret1 = ret;
+                return true;
+            }
             if (y == 0){
                 double y0 = A.y;
                 if (y0 == rhs.A.y || y0 == rhs.B.y){
@@ -190,7 +209,8 @@ bool vec2D_t<T>::findCrossing(vec2D_t<T> rhs, vertex2D_t<T>& ret1){
                 return false;
             }
             double x0 = rhs.A.x;
-            if (std::signbit(x0 - A.x) != std::signbit (x0 - B.x)){
+            double y0 = (x0 - A.x) / k + A.y;
+            if (std::signbit(y0 - rhs.A.y) != std::signbit (y0 - rhs.B.y)){
                 double y0 = (x0 - A.x) * k + A.y;
                 vertex2D_t<T> ret{x0, y0};
                 ret1 = ret;
